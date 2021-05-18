@@ -1,27 +1,26 @@
-from django.contrib.auth.models import User
-from modernrpc.auth.basic import http_basic_auth_login_required
-from modernrpc.core import rpc_method
+from .jsonrpc import JsonRpc, publicmethod
+from django.urls import reverse_lazy
+from django.http.response import HttpResponse
 
 
-@rpc_method
-def register_user(username, password):
-    """Регистрация нового пользователя."""
-    try:
-        user = User.objects.create_user(username, 'nsg@it.lp', password)
-        user.save()
-        return 'Регистрация прошла успешно.'
-    except:
-        return 'Ошибка регистрации.'
+class UserRpcMethods:
+    url = reverse_lazy("api-rpc")
+
+    @publicmethod
+    def add(x, y):
+        return x + y
+
+    @publicmethod
+    def sub(x, y):
+        return x - y
+
+    @publicmethod
+    def sayHello(*args):
+        return "hello "
 
 
-@rpc_method
-@http_basic_auth_login_required
-def change_password(new_password, **kwargs):
-    """Изменение пароля авторизованного пользователя."""
-    try:
-        user = kwargs['request'].user
-        user.set_password(new_password)
-        user.save()
-        return 'Ваш пароль был успешно изменен.'
-    except:
-        return 'Ошибка смены пароля.'
+def user_rpc_view(request):
+    rpc = JsonRpc(UserRpcMethods())
+    response = rpc.handle_request(request)
+
+    return HttpResponse(response.json, mimetype='application/json')

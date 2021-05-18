@@ -1,6 +1,7 @@
 from django.conf.urls import url
-from modernrpc.views import RPCEntryPoint
+
+from .views import user_rpc_view
 
 urlpatterns = [
-    url('', RPCEntryPoint.as_view()),
+    url('', user_rpc_view, name='api-rpc'),
 ]
